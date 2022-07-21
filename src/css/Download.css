@@ -1,0 +1,51 @@
+* {
+    text-align: center;
+}
+
+body {
+  background-color: #111111;
+  margin:0;
+  padding:0;
+  overflow:hide;
+}
+
+.download {
+    border-radius:12px;
+    border:2px solid #0485ff;
+    background: #0485ff;
+    color: #FFFFFF;
+}
+
+.heading {
+    font-family: "Courier New", monospace;
+    margin-top:40vh;
+}
+
+li {
+  display:inline;
+  color:inherit;
+}
+
+ul {
+  list-style-type: none;
+  margin:0;
+  padding:0;
+}
+
+.URL {
+    border-radius:4px 0px 0px 4px;
+    width:30em;
+    text-align: left;
+    border:2px solid #EEEEEE;
+    background: #EEEEEE;
+    outline:none;
+}
+
+.URL, .download {
+    font-size:1.3em;
+    padding:5px 10px;
+}
+
+.URL:focus {
+    border:2px solid #0485ff;
+}
