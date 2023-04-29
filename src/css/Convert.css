@@ -1,12 +1,18 @@
-* {
+t* {
     text-align: center;
+}
+
+@font-face {
+  font-family: "AlexBrush";
+  src: url("https://cdn.glitch.global/e95e77cd-424c-40fb-b910-f0635e148bba/AlexBrush.ttf?v=1674177588449") format("truetype");
 }
 
 body {
   background-color: #111111;
-  margin:0;
-  padding:0;
+  font-family: AlexBrush;
   overflow:hide;
+  padding:0;
+  margin:0;
 }
 
 .download {
@@ -21,19 +27,8 @@ body {
     margin-top:40vh;
 }
 
-li {
-  display:inline;
-  color:inherit;
-}
-
-ul {
-  list-style-type: none;
-  margin:0;
-  padding:0;
-}
-
-.URL {
-    border-radius:4px 0px 0px 4px;
+.url {
+    border-radius:10px;
     width:30em;
     text-align: left;
     border:2px solid #EEEEEE;
@@ -41,11 +36,11 @@ ul {
     outline:none;
 }
 
-.URL, .download {
+.url, .download {
     font-size:1.3em;
     padding:5px 10px;
 }
 
-.URL:focus {
+.url:focus {
     border:2px solid #0485ff;
 }
