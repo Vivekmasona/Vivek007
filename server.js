@@ -1,32 +1,38 @@
-const ytdl = require('ytdl-core');
 const express = require('express');
+const ytdl = require('ytdl-core');
 const cors = require('cors');
+const path = require('path');
 const app = express();
 
-const path = require('path');
-
 app.use(cors());
-
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
-  next()
-})
 
 app.use("/css", express.static(path.join(__dirname, "src", "css")));
 app.use("/js", express.static(path.join(__dirname, "src", "js")));
 
-app.get('/', (req,res) => {
-  res.sendFile(path.join(__dirname, "src", "html", "Download.html"));
+app.use(function (req, res, next) {
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
 });
 
-app.get('/download', async (req,res) => {
+app.get('/', (req,res) => {
+  res.sendFile(path.join(__dirname, "src", "html", "Convert.html"));
+});
+
+app.get('/view', async (req,res) => {  
+var URL = req.query.url;
   
-var URL = req.query.URL;
+if(!URL || !ytdl.validateURL(URL)) return res.sendFile(path.join(__dirname, "src", "html", "NotFound.html"));
 var Video = await ytdl.getBasicInfo(URL);
 
-res.header("Content-Disposition", `attachment; filename="${Video.videoDetails.title}.mp4"`)
+res.header("Content-Disposition", `inline; filename="${Video.videoDetails.title}.mp4"`);
+res.header("Content-Type", "video/mp4");
+res.header("Content-Transfer-Encoding", "binary");
+ 
+const info = await ytdl.getInfo(ytdl.getURLVideoID(URL));
+const format = ytdl.chooseFormat(info.formats, { quality: 22 });
+
 ytdl(URL, {
-    format: 'mp4'
+    format: format => format
     }).pipe(res); 
 });
 
