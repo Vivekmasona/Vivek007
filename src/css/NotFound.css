@@ -1,0 +1,12 @@
+* {
+  text-align: center;
+  font-family: "Courier New", monospace;
+  margin-top:25vh;
+}
+
+body {
+  background-color: #111111;
+  margin:0;
+  padding:0;
+  overflow:hide;
+}
