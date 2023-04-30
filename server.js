@@ -1,7 +1,7 @@
 const express = require('express');
 const ytdl = require('ytdl-core');
 const cors = require('cors');
-const path = require('path');
+const { join } = require('path');
 const app = express();
 
 const fs = require('node:fs');
@@ -9,8 +9,9 @@ const { spawn } = require('child_process');
 
 app.use(cors());
 
-app.use("/css", express.static(path.join(__dirname, "src", "css")));
-app.use("/js", express.static(path.join(__dirname, "src", "js")));
+app.use('/images', express.static(join(__dirname, 'src', 'images')));
+app.use('/css', express.static(join(__dirname, 'src', 'css')));
+app.use('/js', express.static(join(__dirname, 'src', 'js')));
 
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -18,14 +19,14 @@ app.use(function (req, res, next) {
 });
 
 app.get('/', (req,res) => {
-  res.sendFile(path.join(__dirname, "src", "html", "Convert.html"));
+  res.sendFile(join(__dirname, 'src', 'html', 'convert.html'));
 });
 
 app.get('/view', async (req, res) => {
   var url = req.query.url;
 
   if (!url || !ytdl.validateURL(url)) {
-    return res.sendFile(path.join(__dirname, "src", "html", "NotFound.html"));
+    return res.sendFile(join(__dirname, 'src', 'html', 'nf.html'));
   }
 
   var Video = await ytdl.getBasicInfo(url);
@@ -34,7 +35,6 @@ app.get('/view', async (req, res) => {
   const videoFormat = ytdl.chooseFormat(info.formats, { quality: 'highestvideo', format: 'mp4' });
   const audioFormat = ytdl.chooseFormat(info.formats, { filter: 'audioonly' });
 
-  // Download best video and audio
   const video = ytdl(url, { format: videoFormat });
   const audio = ytdl(url, { format: audioFormat });
 
@@ -69,7 +69,7 @@ app.get('/view', async (req, res) => {
 });
 
 app.use(function(req, res, next) {
-  res.status(404).sendFile(path.join(__dirname, "src", "html", "404.html"));
+  res.status(404).sendFile(join(__dirname, 'src', 'html', '404.html'));
 });
 
 app.listen(8080);
