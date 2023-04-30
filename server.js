@@ -1,11 +1,13 @@
 const express = require('express');
 const ytdl = require('ytdl-core');
-const cors = require('cors');
 const { join } = require('path');
+const cors = require('cors');
+const { createReadStream, createWriteStream } = require('fs');
 const app = express();
 
-const fs = require('node:fs');
-const { spawn } = require('child_process');
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
+const ffmpeg = require('fluent-ffmpeg');
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 app.use(cors());
 
@@ -23,49 +25,62 @@ app.get('/', (req,res) => {
 });
 
 app.get('/view', async (req, res) => {
-  var url = req.query.url;
+  const url = req.query.url;
 
   if (!url || !ytdl.validateURL(url)) {
     return res.sendFile(join(__dirname, 'src', 'html', 'nf.html'));
   }
 
-  var Video = await ytdl.getBasicInfo(url);
+  const videoInfo = await ytdl.getInfo(url);
+  const videoTitle = videoInfo.videoDetails.title;
+  const videoID = videoInfo.videoDetails.videoId;
 
-  const info = await ytdl.getInfo(ytdl.getURLVideoID(url));
-  const videoFormat = ytdl.chooseFormat(info.formats, { quality: 'highestvideo', format: 'mp4' });
-  const audioFormat = ytdl.chooseFormat(info.formats, { filter: 'audioonly' });
+  const videoFilePath = join(__dirname, 'videos', `${videoID}.mp4`);
+  const audioFilePath = join(__dirname, 'audio', `${videoID}.mp3`);
+  const outputFilePath = join(__dirname, 'output', `${videoTitle}.mp4`);
 
-  const video = ytdl(url, { format: videoFormat });
-  const audio = ytdl(url, { format: audioFormat });
+  // Download video and audio using ytdl-core
+  const videoStream = ytdl(url, { quality: 'highestvideo', filter: 'audioandvideo' });
+  const audioStream = ytdl(url, { quality: 'highestaudio', filter: 'audioonly' });
 
-  const ffmpeg = spawn('ffmpeg', [
-    '-i', 'pipe:0',
-    '-i', 'pipe:1',
-    '-c', 'copy',
-    '-f', 'matroska',
-    'pipe:2'
-  ]);
+  const videoFile = createWriteStream(videoFilePath);
+  const audioFile = createWriteStream(audioFilePath);
 
-  const headers = {
-    'Content-Type': 'video/mp4',
-    'Content-Disposition': `inline; filename="${Video.videoDetails.title}.mp4"`,
-    'Content-Transfer-Encoding': 'binary'
-  };
+  videoStream.pipe(videoFile);
+  audioStream.pipe(audioFile);
 
-  res.writeHead(200, headers);
+  Promise.all([
+    new Promise((resolve, reject) => videoFile.on('finish', resolve).on('error', reject)),
+    new Promise((resolve, reject) => audioFile.on('finish', resolve).on('error', reject))
+  ])
+    .then(() => {
+      // Merge video and audio using ffmpeg
+      ffmpeg()
+        .input(videoFilePath)
+        .input(audioFilePath)
+        .outputOptions('-c:v copy')
+        .outputOptions('-c:a aac')
+        .outputOptions('-movflags +faststart')
+        .outputOptions('-preset ultrafast')
+        .outputOptions('-shortest') 
+        .on('end', () => {
+          console.log(`Finished generating video: ${outputFilePath}`);
+          // Stream merged file to client
+          const fileStream = createReadStream(outputFilePath);
+          fileStream.pipe(res);
 
-  video.pipe(ffmpeg.stdin);
-  audio.pipe(ffmpeg.stdin);
-
-  ffmpeg.stdout.pipe(res);
-
-  ffmpeg.stderr.on('data', (data) => {
-    console.error(`stderr: ${data}`);
-  });
-
-  ffmpeg.on('close', (code) => {
-    console.log(`child process exited with code ${code}`);
-  });
+          fileStream.on('error', (err) => console.error(err));
+          fileStream.on('close', () => {
+            console.log(`Finished streaming video: ${outputFilePath}`);
+            // Cleanup downloaded files
+            unlink(videoFilePath, (err) => { if (err) console.error(err); });
+            unlink(audioFilePath, (err) => { if (err) console.error(err); });
+          });
+        })
+        .on('error', (err) => console.error(err))
+        .save(outputFilePath);
+    })
+    .catch((err) => console.error(err));
 });
 
 app.use(function(req, res, next) {
