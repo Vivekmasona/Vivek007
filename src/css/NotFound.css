@@ -1,12 +1,19 @@
 * {
-  text-align: center;
-  font-family: "Courier New", monospace;
-  margin-top:25vh;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  background-color: #111111;
-  margin:0;
-  padding:0;
-  overflow:hide;
+  background-color: #f5f5f5;
+  font-family: Arial, sans-serif;
+  position: relative;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
 }
