@@ -1,6 +1,6 @@
-var Download = document.querySelector('.download');
-var url = document.querySelector('.url');
+var btn_view = document.querySelector('.btn-view');
+var url_input = document.querySelector('.url-input');
 
-Download.addEventListener('click', () => {
-  location.href = `${location.href}view?url=${url.value}`
-});
+btn_view.onclick = function() {
+  location.href = `${location.href}view?url=${url_input.value}`
+}
