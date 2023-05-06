@@ -82,3 +82,27 @@ body {
   width: 40px;
   height: 40px;
 }
+
+.discord-link {
+  position: absolute;
+  bottom: 1rem;
+  right: 5rem; /* adjust as necessary */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #7289da; /* Discord color */
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  transition: all 0.2s ease-in-out;
+}
+
+.discord-link:hover {
+  transform: scale(1.1);
+}
+
+.discord-link svg {
+  fill: #ffffff;
+  width: 40px;
+  height: 40px;
+}
