@@ -1,4 +1,6 @@
-# *y2vd Youtube Video Downloader*
-*https://y2vd.glitch.me*
+# Domains
+*https://y2vd.festivedoggo.repl.co/* **- 700Mb max**
+
+*https://y2vd.glitch.me/* **- 199Mb max**
 # preview
-![Y2VD](https://user-images.githubusercontent.com/79816938/235378472-a79fe53d-6089-4efe-9a57-691bd1384ef6.png)
+![github](https://user-images.githubusercontent.com/79816938/236642451-56186ad9-b489-4109-be5a-dd532129da9c.png)

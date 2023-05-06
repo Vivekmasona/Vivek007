@@ -1,8 +1,8 @@
 const express = require('express');
 const ytdl = require('ytdl-core');
-const { join } = require('path');
+const path = require('path');
 const cors = require('cors');
-const { createReadStream, createWriteStream } = require('fs');
+const fs = require('fs');
 const app = express();
 
 const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path;
@@ -11,9 +11,9 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 
 app.use(cors());
 
-app.use('/images', express.static(join(__dirname, 'src', 'images')));
-app.use('/css', express.static(join(__dirname, 'src', 'css')));
-app.use('/js', express.static(join(__dirname, 'src', 'js')));
+app.use('/images', express.static(path.join(__dirname, 'src', 'images')));
+app.use('/css', express.static(path.join(__dirname, 'src', 'css')));
+app.use('/js', express.static(path.join(__dirname, 'src', 'js')));
 
 app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
@@ -21,30 +21,30 @@ app.use(function (req, res, next) {
 });
 
 app.get('/', (req,res) => {
-  res.sendFile(join(__dirname, 'src', 'html', 'convert.html'));
+  res.sendFile(path.join(__dirname, 'src', 'html', 'view.html'));
 });
 
 app.get('/view', async (req, res) => {
   const url = req.query.url;
 
   if (!url || !ytdl.validateURL(url)) {
-    return res.sendFile(join(__dirname, 'src', 'html', 'nf.html'));
+    return res.sendFile(path.join(__dirname, 'src', 'html', 'nf.html'));
   }
 
   const videoInfo = await ytdl.getInfo(url);
   const videoTitle = videoInfo.videoDetails.title;
   const videoID = videoInfo.videoDetails.videoId;
 
-  const videoFilePath = join(__dirname, 'videos', `${videoID}.mp4`);
-  const audioFilePath = join(__dirname, 'audio', `${videoID}.mp3`);
-  const outputFilePath = join(__dirname, 'output', `${videoTitle}.mp4`);
+  const videoFilePath = path.join(__dirname, 'videos', `${videoID}.mp4`);
+  const audioFilePath = path.join(__dirname, 'audio', `${videoID}.mp3`);
+  const outputFilePath = path.join(__dirname, 'output', `${videoTitle}.mp4`);
 
   // Download video and audio using ytdl-core
   const videoStream = ytdl(url, { quality: 'highestvideo', filter: 'audioandvideo' });
   const audioStream = ytdl(url, { quality: 'highestaudio', filter: 'audioonly' });
 
-  const videoFile = createWriteStream(videoFilePath);
-  const audioFile = createWriteStream(audioFilePath);
+  const videoFile = fs.createWriteStream(videoFilePath);
+  const audioFile = fs.createWriteStream(audioFilePath);
 
   videoStream.pipe(videoFile);
   audioStream.pipe(audioFile);
@@ -66,15 +66,16 @@ app.get('/view', async (req, res) => {
         .on('end', () => {
           console.log(`Finished generating video: ${outputFilePath}`);
           // Stream merged file to client
-          const fileStream = createReadStream(outputFilePath);
+          const fileStream = fs.createReadStream(outputFilePath);
           fileStream.pipe(res);
 
           fileStream.on('error', (err) => console.error(err));
           fileStream.on('close', () => {
             console.log(`Finished streaming video: ${outputFilePath}`);
             // Cleanup downloaded files
-            unlink(videoFilePath, (err) => { if (err) console.error(err); });
-            unlink(audioFilePath, (err) => { if (err) console.error(err); });
+            fs.unlink(videoFilePath, (err) => { if (err) console.error(err); });
+            fs.unlink(audioFilePath, (err) => { if (err) console.error(err); });
+            fs.unlink(outputFilePath, (err) => { if (err) console.error(err); });
           });
         })
         .on('error', (err) => console.error(err))
@@ -84,7 +85,7 @@ app.get('/view', async (req, res) => {
 });
 
 app.use(function(req, res, next) {
-  res.status(404).sendFile(join(__dirname, 'src', 'html', '404.html'));
+  res.status(404).sendFile(path.join(__dirname, 'src', 'html', '404.html'));
 });
 
 app.listen(8080);
