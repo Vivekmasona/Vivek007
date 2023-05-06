@@ -1,4 +1,3 @@
-# *y2vd Youtube Video Downloader*
 # Domains
 *https://y2vd.festivedoggo.repl.co/* **- 1Gb max**
 
